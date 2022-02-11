@@ -120,8 +120,15 @@ func main() {
 	}
 	log.Printf("Branch commit: %s", branchCommit.Hash)
 
+	// Get merge-base commit object
+	mergeBases, err := masterCommit.MergeBase(branchCommit)
+	if err != nil {
+		log.Printf("Fail masterCommit.MergeBase() %s", err.Error())
+	}
+	log.Printf("Merge base commit: %s", mergeBases[0].Hash)
+
 	// Get patch object
-	patch, err := masterCommit.Patch(branchCommit)
+	patch, err := mergeBases[0].Patch(branchCommit)
 	if err != nil {
 		log.Printf("Fail branchCommit.Patch: %s", err.Error())
 	}

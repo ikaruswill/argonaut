@@ -14,19 +14,19 @@ struct Args {
     app_name: String,
 
     /// Commit hash to diff against live
-    #[arg(short, long)]
+    #[arg(short, long, env = "CI_COMMIT_SHA")]
     revision: String,
 
     /// Gitlab Hostname
-    #[arg(short = 'g', long)]
+    #[arg(short = 'g', long, env = "CI_SERVER_HOST")]
     gitlab_host: String,
 
     /// Gitlab Project ID
-    #[arg(short = 'p', long)]
+    #[arg(short = 'p', long, env = "CI_PROJECT_ID")]
     gitlab_project_id: String,
 
     /// Gitlab Merge Request ID
-    #[arg(short = 'm', long)]
+    #[arg(short = 'm', long, env = "CI_MERGE_REQUEST_IID")]
     gitlab_mr_id: String,
 }
 

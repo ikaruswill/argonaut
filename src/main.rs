@@ -1,4 +1,3 @@
-use std::fs;
 use std::process::Command;
 use clap::Parser;
 
@@ -8,6 +7,10 @@ struct Args {
     /// Argo CD Hostname
     #[arg(short = 'a', long)]
     argocd_host: String,
+
+    /// Argo CD Token
+    #[arg(long, env = "ARGONAUT_ARGOCD_TOKEN")]
+    argocd_token: String,
     
     /// Argo CD Application to diff
     #[arg(short = 'n', long)]
@@ -26,8 +29,12 @@ struct Args {
     gitlab_project_id: String,
 
     /// Gitlab Merge Request ID
-    #[arg(short = 'm', long, env = "CI_MERGE_REQUEST_IID")]
+    #[arg(long, short = 'm', long, env = "CI_MERGE_REQUEST_IID")]
     gitlab_mr_id: String,
+
+    /// Gitlab Token
+    #[arg(long, env = "ARGONAUT_GITLAB_TOKEN")]
+    gitlab_token: String,
 }
 
 fn main() {
@@ -36,19 +43,19 @@ fn main() {
     let args = Args::parse();
 
     let argocd_hostname = &args.argocd_host;
-    let argocd_token = get_argocd_token();
+    let argocd_token = &args.argocd_token;
     let app_name = &args.app_name;
     let revision = &args.revision;
 
-    let diff = get_argocd_diff(argocd_hostname, &argocd_token, app_name, revision);
+    let diff = get_argocd_diff(argocd_hostname, argocd_token, app_name, revision);
     println!("{diff}");
 
     let gitlab_hostname = &args.gitlab_host;
-    let gitlab_token = get_gitlab_token();
+    let gitlab_token = &args.gitlab_token;
     let project_id = &args.gitlab_project_id;
     let mr_id = &args.gitlab_mr_id;
     post_gitlab_comment(
-        &gitlab_token,
+        gitlab_token,
         gitlab_hostname,
         project_id,
         mr_id,
@@ -72,16 +79,6 @@ fn get_argocd_diff(hostname: &str, token: &str, app_name: &str, revision: &str) 
         .stdout;
     let raw_diff = String::from_utf8_lossy(&cmd_stdout).to_string();
     return raw_diff.trim().to_string();
-}
-
-fn get_argocd_token() -> String {
-    let token = fs::read_to_string("token-argocd.txt").expect("Unable to read file");
-    return token.trim().to_string();
-}
-
-fn get_gitlab_token() -> String {
-    let token = fs::read_to_string("token-gitlab.txt").expect("Unable to read file");
-    return token.trim().to_string();
 }
 
 fn post_gitlab_comment(
